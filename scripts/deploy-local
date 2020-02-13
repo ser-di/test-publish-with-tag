@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+# yarn pre:deploy
+FUNCTION_DIR=$PWD
+export SP_FUNCTION=$(basename $PWD)
+export SP_HANDLER=$(cat ./serverless.yml | grep handler | sed -e 's/\s*handler:\s*//g')
+echo function: $SP_FUNCTION  handler: $SP_HANDLER
+if [ "$(cat ./serverless.yml | grep events)" != "" ]
+then
+  export SP_STREAM=payment-system-requests
+else
+  export SP_STREAM=
+fi
+cd ../..
+if [ "$(aws lambda list-functions --endpoint-url http://localhost:4574 | grep ${SP_FUNCTION})" == "" ]
+then
+  echo "CREATE: ${SP_FUNCTION}.${SP_HANDLER}->${SP_STREAM}"
+  ./scripts/create-function
+else
+  echo "UPDATE: ${SP_FUNCTION}.${SP_HANDLER}->${SP_STREAM}"
+  ./scripts/update-function
+fi
+cd $FUNCTION_DIR
+yarn post:deploy

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+echo "create lambda function '${SP_FUNCTION}'"
+SP_HOME=$(pwd)
+cd ${SP_HOME}/functions/${SP_FUNCTION}/ && sls package
+
+aws lambda create-function \
+ --endpoint-url http://localhost:4574 \
+ --runtime nodejs8.10 \
+ --function-name ${SP_FUNCTION} \
+ --handler handler.request \
+ --zip-file fileb://${SP_HOME}/functions/${SP_FUNCTION}/.serverless/${SP_FUNCTION}.zip \
+ --region us-east-1 \
+ --role arn:aws:iam:::role \
+ --environment fileb://${SP_HOME}/env-variables.json
+# --environment Variables="{MODULE_NAME=${SP_FUNCTION},DEBUG=sp-*}"
+
+aws lambda create-event-source-mapping \
+ --endpoint-url http://localhost:4574 \
+ --region us-east-1 \
+ --function-name ${SP_FUNCTION} \
+ --event-source  arn:aws:kinesis:us-east-1:000000000000:stream/${SP_STREAM} \
+ --batch-size 100 \
+ --starting-position TRIM_HORIZON

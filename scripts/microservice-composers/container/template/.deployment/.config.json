@@ -1,0 +1,84 @@
+{
+  "microservice": "$MICROSERVICE_NAME",
+  "aws-ecs-service": "$AWS_ECS_SERVICE_NAME",
+  "aws-ecs-cluster": "$AWS_ECS_CLUSTER_NAME",
+  "container-definitions": {
+    "x-ray": {
+      "name": "X-RAY",
+      "image": "IMAGE_PATH",
+      "cpu": 64,
+      "memoryReservation": 512,
+      "portMappings" : [
+        {
+          "hostPort": 2000,
+          "containerPort": 2000,
+          "protocol": "udp"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/api-server",
+          "awslogs-region": "AWS_REGION",
+          "awslogs-stream-prefix": "x-ray"
+        }
+      },
+      "environment": [
+        {
+          "name": "AWS_ACCESS_KEY_ID",
+          "value": "API_CI_AWS_ACCESS_KEY_ID"
+        },
+        {
+          "name": "AWS_SECRET_ACCESS_KEY",
+          "value": "API_CI_AWS_SECRET_ACCESS_KEY"
+        },
+        {
+          "name": "HTTP_PROXY",
+          "value": "'http://34.214.115.0:443'"
+        }
+      ]
+    },
+    "$MICROSERVICE_NAME": {
+      "name": "$AWS_ECS_SERVICE_NAME",
+      "image": "IMAGE_PATH",
+      "cpu": 960,
+      "memory": 1536,
+      "essential": true,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/api-server",
+          "awslogs-region": "AWS_REGION",
+          "awslogs-stream-prefix": "api"
+        }
+      },
+      "portMappings": [
+        {
+          "containerPort": 3030
+        }
+      ],
+      "environment": [
+        {
+          "name": "AWS_ACCESS_KEY_ID",
+          "value": "API_CI_AWS_ACCESS_KEY_ID"
+        },
+        {
+          "name": "AWS_SECRET_ACCESS_KEY",
+          "value": "API_CI_AWS_SECRET_ACCESS_KEY"
+        },
+        {
+          "name": "HTTP_PROXY",
+          "value": "'http://34.214.115.0:443'"
+        },
+        {
+          "name": "NO_PROXY",
+          "value": ".amazonaws.com,.seamlesspay.com,localhost,127.0.0.0/8"
+        },
+        {
+          "name": "AWS_XRAY_CONTEXT_MISSING",
+          "value": "LOG_ERROR"
+        }
+      ]
+    }
+  }
+}

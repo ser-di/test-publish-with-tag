@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+#awslocal firehous create-delivery-stream --delivery-stream-name third-party-stream --s3-destination-configuration RoleARN="arn:aws:iam:::role",BucketARN="arn:aws:s3:::third_party_bucket" --region us-east-1
+
+web_port=$(jq '.portmap.localstack' .localstack.json)
+redis_port=$(jq '.portmap.redis' .localstack.json)
+mysql_port=$(jq '.portmap.mysql' .localstack.json)
+mongo_port=$(jq '.portmap.mongo' .localstack.json)
+
+echo "[RUN-LOCALSTACK] Prepare docker:"
+docker stop sp_localstack
+docker stop sp_redis
+docker stop sp_mysql
+docker stop sp_mongo
+docker stop verdaccio
+docker stop $(docker ps -a -q  --filter ancestor=lambci/lambda:nodejs8.10)
+docker rm $(docker ps -a -q  --filter ancestor=lambci/lambda:nodejs8.10)
+docker volume prune -f
+
+sudo rm -rf /tmp/localstack/*
+
+echo "[RUN-LOCALSTACK] Run verdaccio:"
+docker run -d --rm --name verdaccio -p 4873:4873 verdaccio/verdaccio
+
+echo "[RUN-LOCALSTACK] Run sp_mysql:"
+docker run --name sp_mysql \
+  -p ${mysql_port}:3306 \
+  -e "MYSQL_ALLOW_EMPTY_PASSWORD=true" \
+  -e "MYSQL_ROOT_PASSWORD=" \
+  -e "MYSQL_DATABASE=seamlesspay" \
+  -e "MYSQL_USER=root" \
+  -e "MYSQL_PASSWORD=" \
+  -v "/data/mysql:/var/lib/mysql" \
+  -d --rm mysql:latest --default-authentication-plugin=mysql_native_password
+
+echo "[RUN-LOCALSTACK] Run sp_mongo:"
+docker run --name sp_mongo -p ${mongo_port}:27017 -v "/data/db:/data/db" -d --rm mongo:4.0
+
+echo "[RUN-LOCALSTACK] Run sp_redis:"
+docker run --name sp_redis \
+    -p ${redis_port}:6379 \
+    -v "/var/lib/redis:/data" \
+    -d --rm redis:latest
+
+echo "[RUN-LOCALSTACK] Run sp_localstack:"
+docker run --name sp_localstack \
+  --link sp_redis:sp_redis \
+  --link sp_mongo:sp_mongo \
+  --link sp_mysql:sp_mysql \
+  -p ${web_port}:8080 \
+  -p 1443:443 \
+  -p 4567-4599:4567-4599 \
+  -e HOSTNAME=localhost \
+  -e LOCALSTACK_HOSTNAME=localhost \
+  -e TMPDIR=/tmp/localstack \
+  -e LAMBDA_EXECUTOR=docker-reuse \
+  -e LAMBDA_REMOTE_DOCKER=false \
+  -e LAMBDA_DOCKER_NETWORK=host \
+  -e DOCKER_HOST=unix:///var/run/docker.sock \
+  -e DEBUG=1 \
+  -v "${TMPDIR:-/tmp/localstack}:/tmp/localstack" \
+  -v "/var/run/docker.sock:/var/run/docker.sock" \
+  -d --rm localstack/localstack:latest
+
+# sleep 20s
+
+# aws s3api create-bucket --bucket third_party_bucket --region us-east-1 --endpoint-url http://localhost:4572
+# aws s3api create-bucket --bucket dev-global-bin-files --region us-east-1 --endpoint-url http://localhost:4572
+# aws s3 cp ./scripts/localstack-mocks/s3/GLOBBINU.03182019.060047.TXT s3://dev-global-bin-files/GLOBBINU.03182019.060047.TXT --region us-east-1 --endpoint-url http://localhost:4572
+sleep 3s
+
+aws sns create-topic --name third-party-log-topic --endpoint-url http://localhost:4575 --region us-east-1
+aws firehose create-delivery-stream \
+  --endpoint-url http://localhost:4573 \
+  --delivery-stream-name third-party-stream \
+  --region us-east-1 \
+  --s3-destination-configuration RoleARN=arn:aws:iam:::role,BucketARN=arn:aws:s3:::third_party_bucket \
+
+sleep 5s
+aws apigateway create-rest-api --name API-REST --endpoint-url http://127.0.0.1:4567 --region us-east-1
+
+#awslocal ssm put-parameter --name "/dev/paymentSystem/RequestsStreamArn" --type "String" --value "arn:aws:kinesis:us-east-1:000000000000:stream/payment-system-requests" --region us-east-1
+#awslocal ssm put-parameter --name "/dev/paymentSystem/RequestsStreamName" --type "String" --value "payment-system-requests" --region us-east-1
+#awslocal ssm put-parameter --name "/dev/paymentSystem/ResponseSubscribtion" --type "String" --value "redis://localhost/3" --region us-east-1
+#awslocal ssm put-parameter --name \"/${var.stage}/${var.configSection}/ThirdPartyTopic\" --value \"${aws_sns_topic.third_party_log.arn }\" --type String

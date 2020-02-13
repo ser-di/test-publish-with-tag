@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+export DEBUG=*sp-*
+
+yarn pre:deploy
+DEFAULT_ENVIRONMENT=live sls deploy -s staging -r us-east-2 --force
+DEFAULT_ENVIRONMENT=sandbox sls deploy -s staging -r eu-west-1 --force
+yarn post:deploy

@@ -1,0 +1,62 @@
+frameworkVersion: '>=1.0.0 <2.0.0'
+
+service: ps-service-$service_name
+
+plugins:
+  - serverless-jest-plugin
+  - serverless-plugin-include-dependencies
+
+custom:
+  stage: ${opt:stage, 'dev'}
+  configSection: ${opt:configSection, 'paymentSystem'}
+  jest:
+    collectCoverage: true
+  ssmPreset:
+    local:
+      ErrorsTopic: arn:aws:sns:us-east-1:123456789012:error-log-topic
+      DbUriLive: mysql://root@localhost/seamlesspay
+      DbUriSandbox: mysql://root@localhost/seamlesspay_sb
+      DbUriTest: mysql://root@localhost/seamlesspay_test
+      ApiDbUriLive: mongodb://localhost:27017/seamlesspay
+      ApiDbUriSandbox: mongodb://localhost:27017/seamlesspay_sandbox
+      ApiDbUriTest: mongodb://localhost:27017/seamlesspay_test
+    remote:
+      ErrorsTopic: ${ssm:/${self:custom.stage}/${self:custom.configSection}/ErrorsTopic, ''}
+      DbUriLive: ${ssm:/${self:custom.stage}/${self:custom.configSection}/RdsMysqlUriLive, ''}
+      DbUriSandbox: ${ssm:/${self:custom.stage}/${self:custom.configSection}/RdsMysqlUriSandbox, ''}
+      DbUriTest: ${ssm:/${self:custom.stage}/${self:custom.configSection}/RdsMysqlUriTest, ''}
+      ApiDbUriLive: ${ssm:/${self:custom.stage}/api/ApiDbUriLive, ''}
+      ApiDbUriSandbox: ${ssm:/${self:custom.stage}/api/ApiDbUriSandbox, ''}
+      ApiDbUriTest: ${ssm:/${self:custom.stage}/api/ApiDbUriSandbox, ''}
+  ssm:
+    dev: ${self:custom.ssmPreset.local}
+    test: ${self:custom.ssmPreset.remote}
+    staging: ${self:custom.ssmPreset.remote}
+    prod: ${self:custom.ssmPreset.remote}
+provider:
+  name: aws
+  runtime: nodejs10.x
+  timeout: 900
+  tracing: true
+  role: arn:aws:iam::325127086676:role/sp-service
+  environment:
+    STAGE: ${self:custom.stage}
+    MODULE_NAME: ${self:service}
+    ERRORS_TOPIC: ${self:custom.ssm.${self:custom.stage}.ErrorsTopic}
+    PAN_VAULT_DB_URI_LIVE: ${self:custom.ssm.${self:custom.stage}.DbUriLive}
+    PAN_VAULT_DB_URI_SANDBOX: ${self:custom.ssm.${self:custom.stage}.DbUriSandbox}
+    PAN_VAULT_DB_URI_TEST: ${self:custom.ssm.${self:custom.stage}.DbUriTest}
+    API_DB_URI_LIVE: ${self:custom.ssm.${self:custom.stage}.ApiDbUriLive}
+    API_DB_URI_TEST: ${self:custom.ssm.${self:custom.stage}.ApiDbUriTest}
+    API_DB_URI_SANDBOX: ${self:custom.ssm.${self:custom.stage}.ApiDbUriSandbox}
+    DEBUG: ${env:DEBUG, '*sp-*'}
+functions:
+  request:
+    name: ${self:service}
+    handler: handler.run
+    vpc:
+      securityGroupIds:
+        - ${ssm:/${self:custom.stage}/${self:custom.configSection}/SlsSecurityGroupId}
+      subnetIds:
+        - ${ssm:/${self:custom.stage}/${self:custom.configSection}/PrivateSubnetA}
+        - ${ssm:/${self:custom.stage}/${self:custom.configSection}/PrivateSubnetB}

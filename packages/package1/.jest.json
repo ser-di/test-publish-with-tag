@@ -1,0 +1,10 @@
+{
+  "verbose": true,
+  "silent": false,
+  "transform": {},
+  "testEnvironment": "node",
+  "setupFilesAfterEnv": [
+    "jest-extended",
+    "./../../.jest-setup.js"
+  ]
+}

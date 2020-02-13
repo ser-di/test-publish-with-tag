@@ -1,0 +1,18 @@
+2019-02-21T13:21:03.521Z sp-ps-transactions> handler [process] event:
+2019-02-21T13:21:03.522Z ps-transactions> sp-utils:requests [autoIncrement] STARTED!!!: redis://payment-system-redis.fyg8yn.0001.use2.cache.amazonaws.com/4, RCTST0000045893, txnId
+2019-02-21T13:21:03.606Z ps-transactions> sp-processors:functions [getPaymentMethod] Pan vault response: { token: 'TKN_01CBH0CKW6571SC337SWKSDCAE',
+2019-02-21T13:21:03.673Z ps-transactions> sp-processors:functions BIN_StandardCardType: Visa
+2019-02-21T13:21:03.684Z ps-transactions> sp-utils:requests [autoIncrement] count: 19515
+2019-02-21T13:21:03.691Z ps-transactions> sp-processors:functions [setFieldsByRules] DATA: { amount: '000000000003',
+2019-02-21T13:21:03.692Z ps-transactions> sp-processors:functions [getRequestGroups] requestSchemas: [ 'ActivationRequestSchema',
+set Fields 
+2019-02-21T13:21:03.706Z ps-transactions> sp-processors:functions [validateGroups] ajv started: { '$schema': 'http://json-schema.org/schema#',
+2019-02-21T13:21:04.428Z ps-transactions> sp-processors:functions [validateGroups] ajv finished
+2019-02-21T13:21:04.429Z ps-transactions> sp-processors:functions [validateGroups] ajv groups: { ReqClientID:
+2019-02-21T13:21:04.889Z ps-transactions> sp-processors:functions [validateGroups] ajv finished
+2019-02-21T13:21:04.890Z ps-transactions> sp-processors endpoint: https://stg.dw.us.fdcnet.biz/wsdl/rcservice.wsdl
+2019-02-21T13:21:06.193Z ps-transactions> sp-third-party-request:soap response:
+2019-02-21T13:21:06.193Z ps-transactions> sp-third-party-request:send-log [logRequest] PS_THIRD_PARTY_LOG_STREAM: third-party-stream
+2019-02-21T13:21:06.225Z ps-transactions> sp-processors mapTestDynamicFields hook:  ===send-log finished
+
+

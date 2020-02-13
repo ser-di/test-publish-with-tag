@@ -1,0 +1,16 @@
+const getApp = require('@seamlesspay/application')
+const lambdaFeathers = require('@seamlesspay/lambda-feathers')
+const service = require('$serviceName')
+const env = '$env'
+const app = getApp({ env, service })
+process.removeAllListeners('unhandledRejection')
+
+exports.handler = async (event, context) => {
+  const { functionName } = context
+  const { env, source } = event
+  if (source === 'seamlesspay-warm-up') return
+  process.env.MODULE_NAME = functionName
+  const result = await lambdaFeathers(app, event, context)
+  return result
+}
+

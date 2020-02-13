@@ -1,0 +1,49 @@
+{
+  "name": "ps-service-$service_name",
+  "version": "1.0.0",
+  "description": "Payment System Service",
+  "repository": "https://github.com/seamlesspay/sp-project/tree/master/containers/ps-service-$service_name",
+  "scripts": {
+    "build": "echo NO BUILD",
+    "prepublish": "yarn run build",
+    "test": "echo NO TEST YET",
+    "pre:deploy": "",
+    "deploy:local": "",
+    "deploy:staging": "sh .deployment/deployment.sh  us-east-2 && sh .deployment/deployment.sh  eu-west-1 test_mode",
+    "deploy:prod": "sh .deployment/deployment.sh  us-east-1 && sh .deployment/deployment.sh  us-west-2 test_mode",
+    "post:deploy": ""
+  },
+  "dependencies": {
+    "@seamlesspay/logger": "1.0.0",
+    "body-parser": "1.18.3",
+    "compression": "^1.7.1",
+    "cors": "^2.8.4",
+    "@feathersjs/express": "1.2.3",
+    "helmet": "^3.8.2",
+    "@seamlesspay/application": "1.0.0",
+    "@seamlesspay/constants": "1.0.0",
+    "@seamlesspay/schemas": "1.0.0",
+    "@seamlesspay/utils": "1.0.0"
+  },
+  "devDependencies": {
+    "nodecredstash": "1.1.0"
+  },
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "release": {
+    "branch": "master",
+    "verifyConditions": [
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/git",
+      "@semantic-release/github"
+    ],
+    "publish": [
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/git",
+      "@semantic-release/github"
+    ]
+  }
+}

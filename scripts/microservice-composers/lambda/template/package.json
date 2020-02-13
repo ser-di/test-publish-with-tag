@@ -1,0 +1,49 @@
+{
+  "name": "ps-service-$service_name",
+  "version": "1.0.0",
+  "description": "Payment System Service",
+  "repository": "https://github.com/seamlesspay/sp-project/tree/master/functions/ps-service-$service_name",
+  "scripts": {
+    "build": "echo NO BUILD",
+    "prepublish": "yarn run build",
+    "test": "echo NO TEST YET",
+    "pre:deploy": "bash ./../../scripts/pre-deploy",
+    "deploy:local": "bash ./../../scripts/deploy-local",
+    "deploy:staging": "bash ./../../scripts/deploy-staging",
+    "deploy:prod": "bash ./../../scripts/deploy-prod",
+    "post:deploy": "bash ./../../scripts/post-deploy"
+  },
+  "dependencies": {
+    "@seamlesspay/logger": "1.0.0",
+    "serverless-plugin-tracing": "2.0.0",
+    "@seamlesspay/application": "1.0.0",
+    "@seamlesspay/access-control": "1.0.0",
+    "@seamlesspay/constants": "1.0.0",
+    "@seamlesspay/schemas": "1.0.0",
+    "@seamlesspay/utils": "1.0.0"
+  },
+  "devDependencies": {
+    "nodecredstash": "1.1.0",
+    "serverless-cf-vars": "0.1.0",
+    "serverless-jest-plugin": "0.1.6",
+    "serverless-plugin-include-dependencies": "3.2.1"
+  },
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "release": {
+    "branch": "master",
+    "verifyConditions": [
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/git",
+      "@semantic-release/github"
+    ],
+    "publish": [
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/git",
+      "@semantic-release/github"
+    ]
+  }
+}

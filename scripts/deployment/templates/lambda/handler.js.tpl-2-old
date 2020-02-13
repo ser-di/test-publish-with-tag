@@ -1,0 +1,32 @@
+'use strict'
+const awsServerlessExpress = require('aws-serverless-express')
+const getApp = require('@seamlesspay/application')
+// const lambdaFeathers = require('@seamlesspay/lambda-feathers')
+const service = require('$serviceName')
+const _cache = {}
+process.removeAllListeners('unhandledRejection')
+
+// exports.handler = async (event, context) => {
+//   const { functionName } = context
+//   const { env, source } = event
+//   const app = getApp({ env, service })
+//   if (source === 'seamlesspay-warm-up') return
+//   process.env.MODULE_NAME = functionName
+//   const result = await lambdaFeathers(app, event, context)
+//   return result
+// }
+
+const getServer = env => {
+  if (!_cache[env]) {
+    const app =  getApp({ env, service })
+    _cache[env] = awsServerlessExpress.createServer(app)
+  }
+  return _cache[env]
+}
+exports.handler = (event, context) => {
+  const { env, source } = event
+  
+  const server = getServer(env)
+  if (source === 'seamlesspay-warm-up') return
+  return awsServerlessExpress.proxy(server, event, context) 
+}

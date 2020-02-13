@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+echo "*** Update lambda function '${SP_FUNCTION}'"
+
+echo -e "\t 1) Setup default environment variables"
+
+SP_HOME=$(pwd)
+
+echo -e "\t 2) Change directory to function package"
+
+cd ${SP_HOME}/functions/${SP_FUNCTION}/
+
+echo -e "\t 3) Pre deploy"
+
+yarn pre:deploy
+
+echo -e "\t 4) Make serverless package"
+
+sls package
+
+echo -e "\t 5) Post deploy"
+
+yarn post:deploy
+
+echo -e "\t 6) Update function in localstack container"
+
+aws lambda update-function-code \
+ --endpoint-url http://localhost:4574 \
+ --function-name ${SP_FUNCTION} \
+ --zip-file fileb://${SP_HOME}/functions/${SP_FUNCTION}/.serverless/${SP_FUNCTION}.zip \
+ --region us-east-1

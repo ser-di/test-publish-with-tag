@@ -1,0 +1,138 @@
+version: 2.1
+jobs:
+  test:
+    docker:
+      - image: node:10
+      - image: mongo:4.0
+      - image: redis:latest
+      - image: mysql:latest
+        command: [--default-authentication-plugin=mysql_native_password]
+        environment:
+          MYSQL_ALLOW_EMPTY_PASSWORD: true
+          MYSQL_USER: ubuntu
+          MYSQL_PASSWORD:
+          MYSQL_DATABASE: seamlesspay_test
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+    working_directory: ~/app
+    steps:
+      - checkout
+      - run:
+          name: Install packages
+          command: |
+            yarn global add yarn
+            yarn install --ignore-engines
+      - run:
+          name: Install dependencies
+          command: |
+            rm /var/lib/apt/lists/* -vf
+            apt-get autoremove
+            apt-get clean
+            apt-get -y update && apt-get -y dist-upgrade
+            apt-get -y install rsync
+            npm i -g serverless@1.32.0
+            npm i -g lerna
+            npm i -g dependency-check
+      - run:
+          name: Run tests
+          command: |
+            yarn lint
+            yarn check-deps
+            yarn test --ci
+            yarn test-coverage:upload
+      - store_artifacts:
+          path: coverage
+          prefix: coverage
+
+  release:
+    docker:
+      - image: node:latest
+    working_directory: ~/app
+    steps:
+      - checkout
+      - run:
+          name: Install Packages
+          command: |
+            yarn global add yarn
+            yarn install --ignore-engines
+      - run:
+          name: Releasing New Versions
+          command: |
+            yarn release || true
+      - run:
+          name: Adding Change Logs
+          command: |
+            git add .
+            git commit -anm 'chore(release): [skip ci] Adding change logs' --allow-empty
+            git pull --ff-only --no-edit origin master
+            git checkout -b ci/release
+            git push --set-upstream origin ci/release
+
+  deploy_rc:
+    docker:
+      - image: node:10
+      - image: verdaccio/verdaccio:latest
+    working_directory: ~/app
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            apt-get update -y
+            apt-get install zip -y
+            apt-get -y install python-pip
+            pip install --upgrade awscli
+      - run:
+          name: Deploy
+          command: |
+            npm i
+            npm run publish:all
+            npm run deploy:staging -- --concurrency=5
+            npm run deploy:sandbox-staging -- --concurrency=5
+
+  deploy_prod:
+    docker:
+      - image: node:10
+      - image: verdaccio/verdaccio:latest
+    working_directory: ~/app
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            apt-get update -y
+            apt-get install zip -y
+            apt-get -y install python-pip
+            pip install --upgrade awscli
+      
+            - run:
+              name: Deploy
+              command: |
+                npm i
+                npm run publish:all
+                npm run deploy:prod -- --concurrency=5
+                npm run deploy:sandbox -- --concurrency=5
+
+workflows:
+  version: 2
+  deploy:
+    jobs:
+      - test
+      - release:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master-next
+      - deploy_rc:
+          requires:
+            - test
+          filters:
+            branches:
+              only: staging-next
+      - deploy_prod:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master-next

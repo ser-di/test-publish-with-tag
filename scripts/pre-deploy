@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+root_dir="../../"
+current_dir=$(pwd)
+no_build=$1
+if [ "$no_build" == "" ]
+then
+  cd ${root_dir}
+  yarn build
+  cd ${current_dir}
+fi
+
+rm -fr node_modules
+npm install --production --registry http://localhost:4873
+npm audit fix --force
+rm -f package-lock.json

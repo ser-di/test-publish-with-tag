@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+
+declare -A FUNCTION_TIMEOUTS
+# FUNCTION_TIMEOUTS["ps-transactions"]=180
+# DEFAULT_TIMEOUT=180
+# if [ "${FUNCTION_TIMEOUTS["${SP_FUNCTION}"]}" != "" ]
+# then
+#   TIMEOUT="${FUNCTION_TIMEOUTS["${SP_FUNCTION}"]}"
+# else
+#   TIMEOUT=$DEFAULT_TIMEOUT
+# fi
+
+TIMEOUT=180
+echo "*** Create lambda function '${SP_FUNCTION}'"
+
+echo -e "\t 1) Setup default environment variables"
+
+SP_HOME=$(pwd)
+SP_HANDLER=${SP_HANDLER:=handler.process}
+
+echo -e "\t 2) Change directory to function package"
+
+cd ${SP_HOME}/functions/${SP_FUNCTION}/
+
+echo -e "\t 3) Pre deploy"
+
+yarn pre:deploy no_build
+
+echo -e "\t 4) Make serverless package"
+
+NODE_PRESERVE_SYMLINKS=1 sls package
+
+echo -e "\t 5) Post deploy"
+
+yarn post:deploy
+
+echo -e "\t 6) Load lambda environment"
+
+LOCAL_IP=$(hostname -fs | awk '{print $1}')
+SP_LOCALSTACK_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' sp_localstack)
+SP_MONGO_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' sp_mongo)
+SP_MYSQL_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' sp_mysql)
+SP_REDIS_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' sp_redis)
+
+
+lambda_environment=$(jq ".Variables.MODULE_NAME = \"${SP_FUNCTION}\"" <<<$(<${SP_HOME}/env-variables.json)) \
+
+echo ${lambda_environment} | sed "s;sp_localstack;${SP_LOCALSTACK_IP};g;s;sp_mongo;${SP_MONGO_IP};g;s;sp_mysql;${SP_MYSQL_IP};g;s;sp_redis;${SP_REDIS_IP};g;" >> lambda-env.json
+
+echo -e "\t 7) Create function in localstack container"
+
+aws lambda create-function \
+ --endpoint-url http://localhost:4574 \
+ --runtime nodejs8.10 \
+ --function-name ${SP_FUNCTION} \
+ --handler ${SP_HANDLER}\
+ --zip-file fileb://${SP_HOME}/functions/${SP_FUNCTION}/.serverless/${SP_FUNCTION}.zip \
+ --region us-east-1 \
+ --role arn:aws:iam:::role \
+ --environment fileb://lambda-env.json \
+ --memory-size 512 \
+ --timeout $TIMEOUT
+
+#aws lambda create-function \
+# --endpoint-url http://localhost:4574 \
+# --runtime nodejs8.10 \
+# --function-name ${SP_FUNCTION} \
+# --handler ${SP_HANDLER}\
+# --code S3Bucket="__local__",S3Key="${SP_HOME}/functions/${SP_FUNCTION}" \
+# --region us-east-1 \
+# --role arn:aws:iam:::role \
+# --environment fileb://lambda-env.json \
+# --memory-size 512 \
+# --timeout $TIMEOUT
+
+# if [ "$SP_STREAM" != "" ]
+# then
+#   echo "Create Event Source Mapping for function '${SP_FUNCTION}' (Stream '${SP_STREAM}')"
+#   aws lambda create-event-source-mapping \
+#    --endpoint-url http://localhost:4574 \
+#    --region us-east-1 \
+#    --function-name ${SP_FUNCTION} \
+#    --event-source  arn:aws:kinesis:us-east-1:000000000000:stream/${SP_STREAM} \
+#    --batch-size 100 \
+#    --starting-position TRIM_HORIZON
+# fi
+
+echo -e "\t 8) Cleanup lambda env"
+
+rm -rf lambda-env.json
+
+echo "Creation Done!"

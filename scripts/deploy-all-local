@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+yarn build
+
+declare -a FUNCTIONS=(
+    "ps-sandbox-sync"
+    "ps-migrate"
+    "ps-migrate-mongo"
+    "ps-global-bin-parser"
+    "ps-webhooks-scale"
+    "ps-webhooks-worker"
+    "ps-webhooks-process"
+)
+
+for d in ./functions/*/; do
+    service_lambda=$(basename $d)
+
+    if  [[ $service_lambda == ps-service-* ]] ;
+    then
+        FUNCTIONS+=($service_lambda)
+    fi
+done
+
+echo "$FUNCTIONS will be created"
+
+for func in "${FUNCTIONS[@]}"
+do
+  export SP_HANDLER=$(cat ./functions/${func}/serverless.yml | grep handler | sed -e 's/\s*handler:\s*//g')
+  if [ "$(cat ./functions/${func}/serverless.yml | grep events)" != "" ]
+  then
+    export SP_STREAM=payment-system-requests
+  else
+    export SP_STREAM=
+  fi
+  export SP_FUNCTION=${func}
+
+  echo $SP_FUNCTION $SP_HANDLER $SP_STREAM
+
+  ./scripts/create-function
+done
