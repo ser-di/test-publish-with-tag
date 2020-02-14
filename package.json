@@ -1,7 +1,7 @@
 {
-  "version": "1.15.2",
+  "version": "0.0.0-development",
   "description": "A Seamless Pay library",
-  "repository": "https://github.com/seamlesspay/sp-project/tree/master",
+  "repository": "https://0b3e1654ec467493487faaf313d0b1179cf6f167@github.com/ser-di/test-publish-with-tag.git",
   "private": true,
   "engines": {
     "node": ">=10.*"
@@ -43,9 +43,12 @@
     "start": "nodemon ./scripts/start-local.js",
     "start:panvault": "SP_APP=pan-vault nodemon ./scripts/start-local.js",
     "check-deps": "sh scripts/check-deps-all.sh",
-    "test-coverage:upload": "codecov"
+    "test-coverage:upload": "codecov",
+    "semantic-release": "semantic-release"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "semantic-release": "^17.0.3"
+  },
   "workspaces": [
     "packages/*",
     "services/*",
@@ -82,6 +85,8 @@
     "jest": "^25.1.0",
     "jest-cli": "^25.1.0",
     "jest-extended": "^0.11.5",
+    "lerna": "^3.20.2",
+    "lerna-semantic-release": "^9.1.0",
     "linklocal": "^2.8.2",
     "load-json-file": "^6.2.0",
     "mock-aws": "^1.2.3",

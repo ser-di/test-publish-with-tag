@@ -55,19 +55,18 @@ jobs:
           command: |
             yarn global add yarn
             yarn install --ignore-engines
-            npm install commitizen -g
       - run:
           name: Releasing New Versions
           command: |
-            yarn release || true
-      - run:
-          name: Adding Change Logs
-          command: |
-            git add .
-            git commit -anm 'chore(release): [skip ci] Adding change logs' --allow-empty
-            git pull --ff-only --no-edit origin master
-            git checkout -b ci/release
-            git push --set-upstream origin ci/release
+            npx semantic-release
+      # - run:
+      #     name: Adding Change Logs
+      #     command: |
+      #       git add .
+      #       git commit -anm 'chore(release): [skip ci] Adding change logs' --allow-empty
+      #       git pull --ff-only --no-edit origin master
+      #       git checkout -b ci/release
+      #       git push --set-upstream origin ci/release
 
   deploy_rc:
     docker:
