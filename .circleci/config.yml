@@ -2,7 +2,7 @@ version: 2.1
 jobs:
   test:
     docker:
-      - image: node:10
+      - image: node:12
       - image: mongo:4.0
       - image: redis:latest
       - image: mysql:latest
@@ -46,7 +46,7 @@ jobs:
 
   release:
     docker:
-      - image: node:latest
+      - image: node:12
     working_directory: ~/app
     steps:
       - checkout
@@ -70,7 +70,7 @@ jobs:
 
   deploy_rc:
     docker:
-      - image: node:10
+      - image: node:12
       - image: verdaccio/verdaccio:latest
     working_directory: ~/app
     steps:
@@ -92,7 +92,7 @@ jobs:
 
   deploy_prod:
     docker:
-      - image: node:10
+      - image: node:12
       - image: verdaccio/verdaccio:latest
     working_directory: ~/app
     steps:
