@@ -55,6 +55,7 @@ jobs:
           command: |
             yarn global add yarn
             yarn install --ignore-engines
+            npm install commitizen -g
       - run:
           name: Releasing New Versions
           command: |
