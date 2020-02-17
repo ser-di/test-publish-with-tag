@@ -59,6 +59,8 @@ jobs:
           name: Releasing New Versions
           command: |
             npx semantic-release
+            git config --global user.email 'circleci@seamlesspay.com'
+            git config --global user.name "CircleCi"
             git commit -m 'up version'
             lerna publish
       # - run:
