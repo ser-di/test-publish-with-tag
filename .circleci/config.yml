@@ -59,6 +59,7 @@ jobs:
           name: Releasing New Versions
           command: |
             npx semantic-release
+            lerna publish
       # - run:
       #     name: Adding Change Logs
       #     command: |
