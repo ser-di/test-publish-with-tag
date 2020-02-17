@@ -1,5 +1,5 @@
 {
-  "name": "@seamlesspay/package1",
+  "name": "@serdi/package1",
   "version": "1.0.0",
   "description": "Auth for Seamless Payments projects",
   "main": "index.js",
