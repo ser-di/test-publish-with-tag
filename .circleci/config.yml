@@ -63,8 +63,7 @@ jobs:
             git config --global user.name "CircleCi"
             git add . 
             git commit -m 'up version'
-            npm config set _auth ${NPM_TOKEN}
-            npm config set  https://registry.npmjs.org/:_authToken ${NPM_TOKEN}
+            npm config set  //registry.npmjs.org/:_authToken ${NPM_TOKEN}
             lerna publish from-package -y
       # - run:
       #     name: Adding Change Logs
