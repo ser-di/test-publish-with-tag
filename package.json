@@ -44,7 +44,7 @@
     "start:panvault": "SP_APP=pan-vault nodemon ./scripts/start-local.js",
     "check-deps": "sh scripts/check-deps-all.sh",
     "test-coverage:upload": "codecov",
-    "semantic-release": "semantic-release"
+    "semantic-release": "lerna exec 'npx semantic-release' --scope '@seamlesspay/*' "
   },
   "devDependencies": {
     "semantic-release": "^17.0.3"
