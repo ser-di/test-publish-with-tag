@@ -2,7 +2,7 @@
   "name": "@seamlesspay/package1",
   "version": "1.0.0",
   "description": "Auth for Seamless Payments projects",
-  "main": "src/index.js",
+  "main": "index.js",
   "repository": "https://github.com/seamlesspay/sp-project/tree/master/packages/package1",
   "scripts": {
     "test": "STAGE=dev TESTS=true jest --runInBand --forceExit --detectOpenHandles --coverage --config .jest.json __tests__",

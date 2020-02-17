@@ -1,9 +1,9 @@
 {
-  "name": "@seamlesspay/package2",
+  "name": "@seamlesspay/service1",
   "version": "1.0.0",
   "description": "Auth for Seamless Payments projects",
   "main": "index.js",
-  "repository": "https://github.com/seamlesspay/sp-project/tree/master/packages/package2",
+  "repository": "https://github.com/seamlesspay/sp-project/tree/master/packages/service1",
   "scripts": {
     "test": "STAGE=dev TESTS=true jest --runInBand --forceExit --detectOpenHandles --coverage --config .jest.json __tests__",
     "pre:deploy": "echo NO_DEPLOY",

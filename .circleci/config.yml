@@ -2,7 +2,7 @@ version: 2.1
 jobs:
   test:
     docker:
-      - image: node:10
+      - image: node:12
       - image: mongo:4.0
       - image: redis:latest
       - image: mysql:latest
@@ -46,7 +46,7 @@ jobs:
 
   release:
     docker:
-      - image: node:latest
+      - image: node:12
     working_directory: ~/app
     steps:
       - checkout
@@ -58,19 +58,19 @@ jobs:
       - run:
           name: Releasing New Versions
           command: |
-            yarn release || true
-      - run:
-          name: Adding Change Logs
-          command: |
-            git add .
-            git commit -anm 'chore(release): [skip ci] Adding change logs' --allow-empty
-            git pull --ff-only --no-edit origin master
-            git checkout -b ci/release
-            git push --set-upstream origin ci/release
+            npx semantic-release
+      # - run:
+      #     name: Adding Change Logs
+      #     command: |
+      #       git add .
+      #       git commit -anm 'chore(release): [skip ci] Adding change logs' --allow-empty
+      #       git pull --ff-only --no-edit origin master
+      #       git checkout -b ci/release
+      #       git push --set-upstream origin ci/release
 
   deploy_rc:
     docker:
-      - image: node:10
+      - image: node:12
       - image: verdaccio/verdaccio:latest
     working_directory: ~/app
     steps:
@@ -92,7 +92,7 @@ jobs:
 
   deploy_prod:
     docker:
-      - image: node:10
+      - image: node:12
       - image: verdaccio/verdaccio:latest
     working_directory: ~/app
     steps:
@@ -123,7 +123,7 @@ workflows:
             - test
           filters:
             branches:
-              only: master-next
+              only: master
       - deploy_rc:
           requires:
             - test
@@ -135,4 +135,4 @@ workflows:
             - test
           filters:
             branches:
-              only: master-next
+              only: master
