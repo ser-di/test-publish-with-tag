@@ -123,7 +123,7 @@ workflows:
             - test
           filters:
             branches:
-              only: master-next
+              only: master
       - deploy_rc:
           requires:
             - test
@@ -135,4 +135,4 @@ workflows:
             - test
           filters:
             branches:
-              only: master-next
+              only: master
