@@ -59,6 +59,7 @@ jobs:
           name: Releasing New Versions
           command: |
             npx semantic-release
+            git commit -m 'up version'
             lerna publish
       # - run:
       #     name: Adding Change Logs
