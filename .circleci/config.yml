@@ -30,7 +30,6 @@ jobs:
             apt-get clean
             apt-get -y update && apt-get -y dist-upgrade
             apt-get -y install rsync
-            npm i -g serverless@1.32.0
             npm i -g lerna
             npm i -g dependency-check
       - run:
