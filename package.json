@@ -1,4 +1,5 @@
 {
+  "name": "@seamlesspay/api",
   "version": "0.0.0-development",
   "description": "A Seamless Pay library",
   "repository": "https://0b3e1654ec467493487faaf313d0b1179cf6f167@github.com/ser-di/test-publish-with-tag.git",
@@ -44,7 +45,7 @@
     "start:panvault": "SP_APP=pan-vault nodemon ./scripts/start-local.js",
     "check-deps": "sh scripts/check-deps-all.sh",
     "test-coverage:upload": "codecov",
-    "semantic-release": "lerna exec 'npx semantic-release' --scope '@seamlesspay/*' "
+    "semantic-release": "semantic-release"
   },
   "devDependencies": {
     "semantic-release": "^17.0.3"
