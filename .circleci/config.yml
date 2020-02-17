@@ -54,6 +54,7 @@ jobs:
           command: |
             yarn global add yarn
             yarn install --ignore-engines
+            npm i -g lerna
       - run:
           name: Releasing New Versions
           command: |
